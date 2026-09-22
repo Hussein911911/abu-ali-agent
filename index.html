@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>غرفة المساعد الذكي</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #131314; color: #e3e3e3; display: flex; flex-direction: column; height: 100vh; }
+        
+        header { 
+            padding: 15px 20px; 
+            background: #1e1f20; 
+            border-bottom: 1px solid #2e2f31; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .message { max-width: 80%; padding: 12px 18px; border-radius: 14px; line-height: 1.6; font-size: 15px; word-break: break-word; }
+        .user-msg { background-color: #2b2c2f; align-self: flex-start; border-bottom-right-radius: 2px; }
+        .bot-msg { background-color: #1e1f20; align-self: flex-end; border: 1px solid #3c4043; border-bottom-left-radius: 2px; color: #c4c7c5; }
+        .loading { color: #8ab4f8; font-style: italic; }
+        
+        #input-container { padding: 15px 20px; background: #1e1f20; display: flex; gap: 10px; border-top: 1px solid #2e2f31; }
+        input { flex: 1; padding: 12px 18px; background: #131314; border: 1px solid #3c4043; border-radius: 24px; color: #fff; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: #8ab4f8; }
+        button { padding: 0 24px; background: #8ab4f8; color: #040e2f; border: none; border-radius: 24px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #d3e3fd; }
+    </style>
+</head>
+<body>
+
+    <header>غرفة الذكاء الاصطناعي (n8n Connected)</header>
+
+    <div id="chat-box">
+        <div class="message bot-msg">أهلاً بك! الواجهة أصبحت مرتبطة برابط الـ Production الخاص بك بنجاح. اكتب أي أمر لتجربته مع الورك فلو.</div>
+    </div>
+
+    <div id="input-container">
+        <input type="text" id="user-input" placeholder="اكتب رسالتك هنا..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
+
+    <script>
+        // رابط الـ Production الخاص بحسابك في n8n Cloud
+        const N8N_WEBHOOK_URL = 'https://hussein911.app.n8n.cloud/webhook/6d47c7e9-bab0-418f-8901-660a06c0709b';
+
+        async function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            // إضافة رسالة المستخدم
+            addMessage(message, 'user-msg');
+            inputField.value = '';
+
+            // مؤشر التحميل
+            const loadingId = addMessage('جاري معالجة الطلب عبر n8n...', 'bot-msg loading');
+
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                const botMsgElement = document.getElementById(loadingId);
+                botMsgElement.classList.remove('loading');
+                
+                // طباعة الرد القادم من n8n
+                botMsgElement.innerText = data.output || data.reply || data.response || (typeof data === 'string' ? data : JSON.stringify(data));
+            } catch (error) {
+                const botMsgElement = document.getElementById(loadingId);
+                botMsgElement.classList.remove('loading');
+                botMsgElement.innerText = 'عذراً، تعذر الاتصال بالـ Workflow. تأكد من تفعيل الورك فلو بـ n8n (Active).';
+                console.error('Error:', error);
+            }
+        }
+
+        function addMessage(text, className) {
+            const chatBox = document.getElementById('chat-box');
+            const msgDiv = document.createElement('div');
+            const id = 'msg-' + Date.now();
+            msgDiv.id = id;
+            msgDiv.className = `message ${className}`;
+            msgDiv.innerText = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+    </script>
+</body>
+</html>
