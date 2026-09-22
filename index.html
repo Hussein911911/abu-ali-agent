@@ -3,95 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>غرفة المساعد الذكي</title>
+    <title>Abu Ali Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #131314; color: #e3e3e3; display: flex; flex-direction: column; height: 100vh; }
-        
-        header { 
-            padding: 15px 20px; 
-            background: #1e1f20; 
-            border-bottom: 1px solid #2e2f31; 
-            text-align: center; 
-            font-weight: bold; 
-            font-size: 1.1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .message { max-width: 80%; padding: 12px 18px; border-radius: 14px; line-height: 1.6; font-size: 15px; word-break: break-word; }
-        .user-msg { background-color: #2b2c2f; align-self: flex-start; border-bottom-right-radius: 2px; }
-        .bot-msg { background-color: #1e1f20; align-self: flex-end; border: 1px solid #3c4043; border-bottom-left-radius: 2px; color: #c4c7c5; }
-        .loading { color: #8ab4f8; font-style: italic; }
-        
-        #input-container { padding: 15px 20px; background: #1e1f20; display: flex; gap: 10px; border-top: 1px solid #2e2f31; }
-        input { flex: 1; padding: 12px 18px; background: #131314; border: 1px solid #3c4043; border-radius: 24px; color: #fff; font-size: 15px; outline: none; transition: 0.2s; }
-        input:focus { border-color: #8ab4f8; }
-        button { padding: 0 24px; background: #8ab4f8; color: #040e2f; border: none; border-radius: 24px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #d3e3fd; }
+        body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-gray-900 text-gray-100 flex flex-col h-screen">
 
-    <header>غرفة الذكاء الاصطناعي (n8n Connected)</header>
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 p-4 text-center text-lg font-bold shadow-md">
+        🤖 Abu Ali Agent
+    </header>
 
-    <div id="chat-box">
-        <div class="message bot-msg">أهلاً بك! الواجهة أصبحت مرتبطة برابط الـ Production الخاص بك بنجاح. اكتب أي أمر لتجربته مع الورك فلو.</div>
-    </div>
+    <!-- Chat Messages Container -->
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="flex justify-start">
+            <div class="bg-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700">
+                أهلاً بك! أنا جاهز للتحدث معك، اكتب أي رسالة لتجربتي.
+            </div>
+        </div>
+    </main>
 
-    <div id="input-container">
-        <input type="text" id="user-input" placeholder="اكتب رسالتك هنا..." onkeydown="if(event.key==='Enter') sendMessage()">
-        <button onclick="sendMessage()">إرسال</button>
-    </div>
+    <!-- Input Bar -->
+    <footer class="p-4 bg-gray-800 border-t border-gray-700">
+        <form id="chat-form" onsubmit="sendMessage(event)" class="flex gap-2 max-w-4xl mx-auto">
+            <input 
+                type="text" 
+                id="user-input" 
+                placeholder="اكتب رسالتك هنا..." 
+                required 
+                autocomplete="off"
+                class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+            <button 
+                type="submit" 
+                id="send-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
+            >
+                إرسال
+            </button>
+        </form>
+    </footer>
 
     <script>
-        // رابط الـ Production الخاص بحسابك في n8n Cloud
-        const N8N_WEBHOOK_URL = 'https://hussein911.app.n8n.cloud/webhook/6d47c7e9-bab0-418f-8901-660a06c0709b';
+        const WEBHOOK_URL = "https://hussein911.app.n8n.cloud/webhook/6d47c7e9-bab0-418f-8901-660a06c0709b";
 
-        async function sendMessage() {
-            const inputField = document.getElementById('user-input');
-            const message = inputField.value.trim();
-            if (!message) return;
+        async function sendMessage(e) {
+            e.preventDefault();
+            
+            const inputField = document.getElementById("user-input");
+            const sendBtn = document.getElementById("send-btn");
+            const chatContainer = document.getElementById("chat-container");
+            const messageText = inputField.value.trim();
 
-            // إضافة رسالة المستخدم
-            addMessage(message, 'user-msg');
-            inputField.value = '';
+            if (!messageText) return;
 
-            // مؤشر التحميل
-            const loadingId = addMessage('جاري معالجة الطلب عبر n8n...', 'bot-msg loading');
+            // 1. إضافة رسالة المستخدم للشاشة
+            appendMessage(messageText, 'user');
+            inputField.value = "";
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+
+            // 2. إنشاء مكان لرد البوت (حالة الانتظار)
+            const botMsgElement = appendMessage("جاري التفكير...", 'bot');
 
             try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
+                const response = await fetch(WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ chatInput: messageText, message: messageText })
                 });
 
-                const data = await response.json();
-                const botMsgElement = document.getElementById(loadingId);
-                botMsgElement.classList.remove('loading');
-                
-                // طباعة الرد القادم من n8n
-                botMsgElement.innerText = data.output || data.reply || data.response || (typeof data === 'string' ? data : JSON.stringify(data));
+                const rawText = await response.text();
+                let cleanReply = "";
+
+                // محاولة فك الشفرة إذا كانت JSON
+                try {
+                    const parsedJson = JSON.parse(rawText);
+                    cleanReply = parsedJson.output || parsedJson.text || parsedJson.message || parsedJson.response || JSON.stringify(parsedJson);
+                } catch (err) {
+                    cleanReply = rawText;
+                }
+
+                // إذا وصل كود HTML نقوم بتنظيفه واستخراج النص فقط تلقائياً
+                if (typeof cleanReply === 'string' && (cleanReply.includes('<html') || cleanReply.includes('<!DOCTYPE'))) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(cleanReply, 'text/html');
+                    cleanReply = doc.body.textContent.trim() || "تم استلام الرد بنجاح.";
+                }
+
+                botMsgElement.innerText = cleanReply;
+
             } catch (error) {
-                const botMsgElement = document.getElementById(loadingId);
-                botMsgElement.classList.remove('loading');
-                botMsgElement.innerText = 'عذراً، تعذر الاتصال بالـ Workflow. تأكد من تفعيل الورك فلو بـ n8n (Active).';
-                console.error('Error:', error);
+                console.error("Error:", error);
+                botMsgElement.innerText = "عذراً، حدث خطأ في الاتصال بالورُك فلو.";
+            } finally {
+                inputField.disabled = false;
+                sendBtn.disabled = false;
+                inputField.focus();
+                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
 
-        function addMessage(text, className) {
-            const chatBox = document.getElementById('chat-box');
-            const msgDiv = document.createElement('div');
-            const id = 'msg-' + Date.now();
-            msgDiv.id = id;
-            msgDiv.className = `message ${className}`;
-            msgDiv.innerText = text;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            return id;
+        function appendMessage(text, sender) {
+            const chatContainer = document.getElementById("chat-container");
+            const wrapper = document.createElement("div");
+            wrapper.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const msgBubble = document.createElement("div");
+            if (sender === 'user') {
+                msgBubble.className = "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-xs md:max-w-md shadow-sm";
+            } else {
+                msgBubble.className = "bg-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700 whitespace-pre-wrap";
+            }
+
+            msgBubble.innerText = text;
+            wrapper.appendChild(msgBubble);
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return msgBubble;
         }
     </script>
 </body>
