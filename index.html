@@ -13,15 +13,16 @@
 <body class="bg-gray-900 text-gray-100 flex flex-col h-screen">
 
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4 text-center text-lg font-bold shadow-md">
-        🤖 Abu Ali Agent
+    <header class="bg-gray-800 border-b border-gray-700 p-4 text-center text-lg font-bold shadow-md flex justify-between items-center px-6">
+        <span>🤖 Abu Ali Agent</span>
+        <span class="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1 rounded-full">متصل</span>
     </header>
 
     <!-- Chat Messages Container -->
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4">
         <div class="flex justify-start">
-            <div class="bg-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700">
-                أهلاً بك! أنا جاهز للتحدث معك، اكتب أي رسالة لتجربتي.
+            <div class="bg-gray-800 text-gray-200 p-4 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700">
+                أهلاً بك! أنا جاهز للتحدث معك. يمكنك إرسال النصوص أو طلب الوسائط وسأقوم بمعالجتها فوراً.
             </div>
         </div>
     </main>
@@ -60,14 +61,14 @@
 
             if (!messageText) return;
 
-            // 1. إضافة رسالة المستخدم للشاشة
+            // 1. إضافة رسالة المستخدم
             appendMessage(messageText, 'user');
             inputField.value = "";
             inputField.disabled = true;
             sendBtn.disabled = true;
 
-            // 2. إنشاء مكان لرد البوت (حالة الانتظار)
-            const botMsgElement = appendMessage("جاري التفكير...", 'bot');
+            // 2. إضافة رسالة انتظار البوت
+            const botMsgBubble = appendMessage("جاري التفكير...", 'bot');
 
             try {
                 const response = await fetch(WEBHOOK_URL, {
@@ -77,28 +78,41 @@
                 });
 
                 const rawText = await response.text();
+                let rawHtmlContent = "";
                 let cleanReply = "";
 
-                // محاولة فك الشفرة إذا كانت JSON
                 try {
                     const parsedJson = JSON.parse(rawText);
-                    cleanReply = parsedJson.output || parsedJson.text || parsedJson.message || parsedJson.response || JSON.stringify(parsedJson);
+                    rawHtmlContent = parsedJson.html || "";
+                    cleanReply = parsedJson.html || parsedJson.output || parsedJson.text || parsedJson.message || parsedJson.response || rawText;
                 } catch (err) {
                     cleanReply = rawText;
                 }
 
-                // إذا وصل كود HTML نقوم بتنظيفه واستخراج النص فقط تلقائياً
-                if (typeof cleanReply === 'string' && (cleanReply.includes('<html') || cleanReply.includes('<!DOCTYPE'))) {
+                // تنظيف كود الـ HTML واستخراج النص المباشر
+                let isHtmlDetected = false;
+                if (typeof cleanReply === 'string' && (cleanReply.includes('<') || cleanReply.includes('>'))) {
+                    isHtmlDetected = true;
+                    if (!rawHtmlContent) rawHtmlContent = cleanReply;
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(cleanReply, 'text/html');
-                    cleanReply = doc.body.textContent.trim() || "تم استلام الرد بنجاح.";
+                    cleanReply = doc.body.textContent.replace(/\s+/g, ' ').trim() || "تم استلام الرد بنجاح.";
                 }
 
-                botMsgElement.innerText = cleanReply;
+                // مسح نص الانتظار وتفريغ الفقرة لتعبئتها بالشكل الفخم
+                botMsgBubble.innerHTML = "";
+
+                // نص الرد الصافي
+                const textNode = document.createElement("div");
+                textNode.innerText = cleanReply;
+                botMsgBubble.appendChild(textNode);
+
+                // أزرار التحكم بالرسالة (نسخ + مشاركة + نسخ HTML)
+                addActionBar(botMsgBubble, cleanReply, rawHtmlContent, isHtmlDetected);
 
             } catch (error) {
                 console.error("Error:", error);
-                botMsgElement.innerText = "عذراً، حدث خطأ في الاتصال بالورُك فلو.";
+                botMsgBubble.innerText = "عذراً، حدث خطأ في الاتصال بالورُك فلو.";
             } finally {
                 inputField.disabled = false;
                 sendBtn.disabled = false;
@@ -114,18 +128,66 @@
 
             const msgBubble = document.createElement("div");
             if (sender === 'user') {
-                msgBubble.className = "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-xs md:max-w-md shadow-sm";
+                msgBubble.className = "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-xs md:max-w-md shadow-sm space-y-2";
+                msgBubble.innerText = text;
+                addActionBar(msgBubble, text, "", false);
             } else {
-                msgBubble.className = "bg-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700 whitespace-pre-wrap";
+                msgBubble.className = "bg-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700 space-y-2 whitespace-pre-wrap";
+                msgBubble.innerText = text;
             }
 
-            msgBubble.innerText = text;
             wrapper.appendChild(msgBubble);
             chatContainer.appendChild(wrapper);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             return msgBubble;
         }
+
+        function addActionBar(bubbleElement, textToCopy, htmlContent, showHtmlBtn) {
+            const btnBar = document.createElement("div");
+            btnBar.className = "flex flex-wrap gap-2 pt-2 mt-2 border-t border-gray-700/50 text-xs text-gray-300";
+
+            // زر نسخ النص
+            const copyBtn = document.createElement("button");
+            copyBtn.type = "button";
+            copyBtn.className = "hover:text-blue-400 bg-gray-900/50 px-2 py-1 rounded border border-gray-600 flex items-center gap-1 transition-all";
+            copyBtn.innerHTML = "📋 نسخ النص";
+            copyBtn.onclick = () => copyToClipboard(textToCopy, copyBtn);
+            btnBar.appendChild(copyBtn);
+
+            // زر المشاركة
+            if (navigator.share) {
+                const shareBtn = document.createElement("button");
+                shareBtn.type = "button";
+                shareBtn.className = "hover:text-green-400 bg-gray-900/50 px-2 py-1 rounded border border-gray-600 flex items-center gap-1 transition-all";
+                shareBtn.innerHTML = "🔗 مشاركة";
+                shareBtn.onclick = () => {
+                    navigator.share({ title: 'Abu Ali Agent Response', text: textToCopy }).catch(() => {});
+                };
+                btnBar.appendChild(shareBtn);
+            }
+
+            // زر نسخ كود HTML (إذا كان هناك كود HTML)
+            if (showHtmlBtn && htmlContent) {
+                const copyHtmlBtn = document.createElement("button");
+                copyHtmlBtn.type = "button";
+                copyHtmlBtn.className = "hover:text-yellow-400 bg-gray-900/50 px-2 py-1 rounded border border-gray-600 flex items-center gap-1 transition-all";
+                copyHtmlBtn.innerHTML = "📄 نسخ كود HTML";
+                copyHtmlBtn.onclick = () => copyToClipboard(htmlContent, copyHtmlBtn);
+                btnBar.appendChild(copyHtmlBtn);
+            }
+
+            bubbleElement.appendChild(btnBar);
+        }
+
+        function copyToClipboard(content, btnElement) {
+            navigator.clipboard.writeText(content).then(() => {
+                const originalText = btnElement.innerHTML;
+                btnElement.innerHTML = "✅ تم النسخ!";
+                setTimeout(() => { btnElement.innerHTML = originalText; }, 2000);
+            });
+        }
     </script>
 </body>
-</html>
+    </html>
+    
