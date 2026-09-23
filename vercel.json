@@ -1,5 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/api/chat", "destination": "https://hussein911.app.n8n.cloud/webhook/abu-ali-chat" }
-  ]
-}
