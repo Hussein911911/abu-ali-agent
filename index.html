@@ -149,10 +149,6 @@ footer{padding:6px 14px;background:var(--panel);border-top:1px solid #1d3a6b;fon
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-/* ═══ 🔌 رابط n8n الإنتاجي — يُلصق هنا (Production URL) ═══ */
-const CHAT_API='https://hussein911.app.n8n.cloud/webhook/abu-ali-chat';
-const HAS_API=!CHAT_API.includes('الصق_رابط');
-
 /* ═══ بيانات القواطع الـ18 ═══ */
 const SECTORS=[
  {k:'nebuchad',i:'🏗️',n:'نبوخذ نصّر',d:'مواقع وبرمجة ونشر واختبار',c:0x4f9cff},
@@ -327,4 +323,7 @@ if(SR){const rec=new SR();rec.lang='ar-IQ';rec.onresult=e=>{
 }else micBtn.style.display='none';
 
 /* ═══ 💬 الدردشة ═══ */
-const msgs
+const msgs=document.getElementById('msgs'),inp=document.getElementById('inp'),mlist=document.getElementById('mlist');
+let gen='gen1';
+const HKEY=g=>'ab_hist_'+g;
+let hist=JSON.parse(localStorage
