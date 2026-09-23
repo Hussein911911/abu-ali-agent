@@ -1,193 +1,330 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abu Ali Agent</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏛️ زقورة أبو علي</title>
+<style>
+:root{
+  --lapis:#0a1830; --lapis2:#10254a; --panel:#0e2040; --panel2:#132c55;
+  --gold:#d4af37; --gold2:#f0d98c; --clay:#b5482f; --txt:#eae4d3; --dim:#8fa3c8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--lapis);color:var(--txt);height:100vh;overflow:hidden}
+/* خلفية نقوش مسمارية */
+body::before{content:'';position:fixed;inset:0;opacity:.045;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cg fill='%23d4af37'%3E%3Cpath d='M20 10 L36 10 L28 34 Z'/%3E%3Cpath d='M70 50 L86 50 L78 74 Z'/%3E%3Cpath d='M110 15 L126 15 L118 39 Z'/%3E%3Cpath d='M15 90 L31 90 L23 114 Z'/%3E%3Cpath d='M95 105 L111 105 L103 129 Z'/%3E%3Crect x='50' y='20' width='4' height='26' rx='2' transform='rotate(25 52 33)'/%3E%3Crect x='10' y='55' width='4' height='22' rx='2' transform='rotate(-30 12 66)'/%3E%3Crect x='115' y='70' width='4' height='24' rx='2' transform='rotate(40 117 82)'/%3E%3C/g%3E%3C/svg%3E");}
+#app{display:flex;flex-direction:column;height:100vh}
+/* ── الترويسة ── */
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:linear-gradient(180deg,var(--panel2),var(--panel));border-bottom:2px solid var(--gold);flex-shrink:0}
+header .logo{font-size:26px;filter:drop-shadow(0 0 8px var(--gold))}
+header h1{font-size:19px;color:var(--gold2);letter-spacing:.5px}
+header .sub{font-size:11px;color:var(--dim)}
+#modeChip{margin-inline-start:auto;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--gold);color:var(--gold2);white-space:nowrap}
+#modeChip.live{background:rgba(60,200,120,.15);border-color:#3cc878;color:#7ce3a5}
+nav{display:flex;gap:6px;background:var(--panel);padding:8px 12px;border-bottom:1px solid #1d3a6b;flex-shrink:0;overflow-x:auto}
+nav button{background:none;border:1px solid transparent;color:var(--dim);padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;white-space:nowrap;transition:.2s}
+nav button.on{background:var(--lapis2);border-color:var(--gold);color:var(--gold2);box-shadow:0 0 12px rgba(212,175,55,.15)}
+.tab{display:none;flex:1;overflow:hidden}.tab.on{display:flex}
+/* ── الدردشة ── */
+#chatWrap{display:flex;flex:1;overflow:hidden}
+#side{width:230px;background:var(--panel);border-inline-end:1px solid #1d3a6b;padding:14px;overflow-y:auto;flex-shrink:0}
+#side h3{font-size:13px;color:var(--gold);margin-bottom:10px}
+.mitem{background:var(--lapis2);border:1px solid #1d3a6b;border-radius:10px;padding:9px 10px;margin-bottom:8px;font-size:12px}
+.mitem b{color:var(--gold2);display:block;font-size:12px;margin-bottom:3px}
+.mitem .st{font-size:10px;padding:2px 8px;border-radius:10px}
+.st.done{background:rgba(60,200,120,.15);color:#7ce3a5}.st.run{background:rgba(212,175,55,.15);color:var(--gold2)}.st.wait{background:rgba(240,140,60,.15);color:#f0b27c}
+#chatCol{flex:1;display:flex;flex-direction:column;min-width:0}
+#msgs{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:78%;padding:12px 15px;border-radius:14px;line-height:1.75;font-size:14.5px;white-space:pre-wrap;animation:pop .25s}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.msg.u{align-self:flex-start;background:linear-gradient(135deg,#1b3c74,#16305e);border:1px solid #2a4f8f;border-bottom-left-radius:4px}
+.msg.a{align-self:flex-end;background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--gold);border-bottom-right-radius:4px;position:relative}
+.msg.a::before{content:'⚔️';position:absolute;top:-12px;right:-8px;font-size:18px}
+.msg.a2::before{content:'🧠'}
+.sys{align-self:center;font-size:12px;color:var(--dim);background:rgba(212,175,55,.07);border:1px dashed #4d5c30;border-radius:20px;padding:5px 14px}
+.card{align-self:stretch;max-width:92%;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:12px 14px}
+.card h4{color:var(--gold2);font-size:13px;margin-bottom:10px}
+.step{display:flex;gap:10px;align-items:center;padding:6px 4px;font-size:13px;color:var(--dim)}
+.step .ic{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.step.done{color:var(--txt)}.step.done .tick{color:#3cc878}
+.step.running .tick{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.appr{margin-top:10px;background:rgba(212,175,55,.08);border:1px solid var(--gold);border-radius:12px;padding:12px}
+.appr p{font-size:13px;color:var(--gold2);margin-bottom:10px}
+.appr .btns{display:flex;gap:8px}
+.byes,.bno{padding:8px 18px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:13px;border:none}
+.byes{background:#1f7a46;color:#fff}.bno{background:#7a2b1f;color:#fff}
+#inpBar{display:flex;gap:8px;padding:12px 14px;background:var(--panel);border-top:1px solid #1d3a6b;flex-shrink:0}
+#inp{flex:1;background:var(--lapis2);border:1px solid #1d3a6b;border-radius:12px;color:var(--txt);padding:12px 14px;font-family:inherit;font-size:14px;resize:none;height:48px}
+#inp:focus{outline:none;border-color:var(--gold)}
+.ibtn{background:var(--lapis2);border:1px solid #1d3a6b;color:var(--gold2);border-radius:12px;width:48px;cursor:pointer;font-size:18px;transition:.2s}
+.ibtn:hover{border-color:var(--gold);box-shadow:0 0 10px rgba(212,175,55,.25)}
+#sendBtn{background:linear-gradient(135deg,var(--gold),#b8932e);color:#1a1205;font-weight:bold;border:none}
+#ttsBtn.on{background:rgba(60,200,120,.2);border-color:#3cc878;color:#7ce3a5}
+.msg.a2::before{content:'🧠'}
+.card.done{border-color:#3cc878}
+#genBar{display:flex;gap:8px;padding:10px 14px;background:var(--panel);border-bottom:1px solid #1d3a6b;flex-shrink:0}
+.genbtn{flex:1;background:var(--lapis2);border:1px solid #1d3a6b;color:var(--dim);padding:9px;border-radius:11px;cursor:pointer;font-family:inherit;font-size:13px;transition:.2s}
+.genbtn.on{border-color:var(--gold);color:var(--gold2);box-shadow:0 0 14px rgba(212,175,55,.22)}
+.genbtn small{display:block;font-size:10px;color:var(--dim);margin-top:2px}
+#chips{display:none;gap:8px;padding:8px 14px;background:var(--panel);flex-wrap:wrap;border-top:1px solid #1d3a6b;flex-shrink:0}
+#chips.on{display:flex}
+.chip{background:var(--lapis2);border:1px solid #2a4f8f;color:var(--txt);padding:7px 13px;border-radius:18px;cursor:pointer;font-family:inherit;font-size:12px}
+.chip:hover{border-color:var(--gold)}
+.yt{width:100%;max-width:430px;border:none;border-radius:12px;aspect-ratio:16/9;margin-top:8px;border:1px solid var(--gold);display:block}
+/* ── العقل (جارفيس) ── */
+#brainTab{position:relative;flex-direction:column}
+#brainCanvas{flex:1;width:100%}
+#brainHud{position:absolute;top:14px;right:14px;background:rgba(10,24,48,.75);backdrop-filter:blur(6px);border:1px solid var(--gold);border-radius:14px;padding:12px 16px;font-size:12px;line-height:2}
+#brainHud b{color:var(--gold2)}
+#brainState{font-size:15px;color:var(--gold)}
+#brainBtns{position:absolute;bottom:18px;right:0;left:0;display:flex;justify-content:center;gap:10px}
+#brainBtns button{background:rgba(10,24,48,.8);border:1px solid var(--gold);color:var(--gold2);padding:10px 18px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:13px}
+/* ── القواطع ── */
+#segGrid{flex:1;overflow-y:auto;padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px;align-content:start}
+.seg{background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid #1d3a6b;border-radius:14px;padding:14px;transition:.25s}
+.seg:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.seg .si{font-size:26px}.seg h4{color:var(--gold2);font-size:14px;margin:6px 0 4px}
+.seg p{font-size:12px;color:var(--dim);line-height:1.6}
+footer{padding:6px 14px;background:var(--panel);border-top:1px solid #1d3a6b;font-size:10px;color:var(--dim);text-align:center;flex-shrink:0}
+@media(max-width:800px){#side{display:none}.msg{max-width:92%}}
+</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head>
-<body class="bg-gray-900 text-gray-100 flex flex-col h-screen">
+<body>
+<div id="app">
+  <header>
+    <div class="logo">🏛️</div>
+    <div><h1>زقورة أبو علي</h1><div class="sub">قيادة الجيش الرقمي • 18 قاطعاً • بابل ٢٠٢٦</div></div>
+    <div id="modeChip">⏳ جاري الفحص…</div>
+  </header>
+  <nav>
+    <button class="on" data-t="chatTab">💬 الدردشة</button>
+    <button data-t="brainTab">🧠 العقل (جارفيس)</button>
+    <button data-t="segTab">🏛️ القواطع الـ18</button>
+  </nav>
 
-    <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4 text-center text-lg font-bold shadow-md flex justify-between items-center px-6">
-        <span>🤖 Abu Ali Agent</span>
-        <span class="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1 rounded-full">متصل</span>
-    </header>
-
-    <!-- Chat Messages Container -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4">
-        <div class="flex justify-start">
-            <div class="bg-gray-800 text-gray-200 p-4 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700">
-                أهلاً بك! أنا جاهز للتحدث معك. يمكنك إرسال النصوص أو طلب الوسائط وسأقوم بمعالجتها فوراً.
-            </div>
+  <!-- 💬 الدردشة -->
+  <div class="tab on" id="chatTab">
+    <div id="chatWrap">
+      <aside id="side"><h3>📜 سجل المهمات</h3><div id="mlist"><div class="mitem"><b>—</b><span class="st done">لا مهمات بعد</span></div></div></aside>
+      <div id="chatCol">
+        <div id="genBar">
+          <button class="genbtn on" data-g="gen1">⚔️ الجنرال الأول<small>مسرح العمليات 1 — المهام والتنفيذ</small></button>
+          <button class="genbtn" data-g="gen2">🧠 الجنرال الثاني<small>مسرح العمليات 2 — شرح وأفكار ومهام موازية</small></button>
         </div>
-    </main>
+        <div id="msgs"></div>
+        <div id="chips"></div>
+        <div id="inpBar">
+          <button class="ibtn" id="micBtn" title="أمر صوتي">🎙️</button>
+          <button class="ibtn" id="ttsBtn" title="صوت أبو علي">🔊</button>
+          <textarea id="inp" placeholder="أمُر أبو علي… (جرّب: ابنيلي موقع لمطعمي)"></textarea>
+          <button class="ibtn" id="sendBtn" title="إرسال">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Input Bar -->
-    <footer class="p-4 bg-gray-800 border-t border-gray-700">
-        <form id="chat-form" onsubmit="sendMessage(event)" class="flex gap-2 max-w-4xl mx-auto">
-            <input 
-                type="text" 
-                id="user-input" 
-                placeholder="اكتب رسالتك هنا..." 
-                required 
-                autocomplete="off"
-                class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            />
-            <button 
-                type="submit" 
-                id="send-btn"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
-            >
-                إرسال
-            </button>
-        </form>
-    </footer>
+  <!-- 🧠 العقل -->
+  <div class="tab" id="brainTab">
+    <div id="brainCanvas"></div>
+    <div id="brainHud">
+      <b>🧠 عقل الزقورة</b><br>
+      الحالة: <span id="brainState">😴 خامل — يتنفس</span><br>
+      <span style="color:var(--dim)">الحلقات الذهبية = العقال 👑<br>النقاط المدارية = القواطع الـ18</span>
+    </div>
+    <div id="brainBtns">
+      <button id="demoSpeak">🗣️ خلّي أبو علي يحچي</button>
+      <button id="demoThink">⚡ محاكاة تفكير</button>
+    </div>
+  </div>
 
-    <script>
-        const WEBHOOK_URL = "https://hussein911.app.n8n.cloud/webhook/6d47c7e9-bab0-418f-8901-660a06c0709b";
+  <!-- 🏛️ القواطع -->
+  <div class="tab" id="segTab"><div id="segGrid"></div></div>
+  <footer>زقورة أبو علي — بُنيت بأيدي بابلية 🏛️ | الوضع التجريبي حتى وصول مفتاح Gemini</footer>
+</div>
 
-        async function sendMessage(e) {
-            e.preventDefault();
-            
-            const inputField = document.getElementById("user-input");
-            const sendBtn = document.getElementById("send-btn");
-            const chatContainer = document.getElementById("chat-container");
-            const messageText = inputField.value.trim();
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-            if (!messageText) return;
+/* ═══ 🔌 رابط n8n الإنتاجي — يُلصق هنا (Production URL) ═══ */
+const CHAT_API='https://hussein911.app.n8n.cloud/webhook/abu-ali-chat';
+const HAS_API=!CHAT_API.includes('الصق_رابط');
 
-            // 1. إضافة رسالة المستخدم
-            appendMessage(messageText, 'user');
-            inputField.value = "";
-            inputField.disabled = true;
-            sendBtn.disabled = true;
+/* ═══ بيانات القواطع الـ18 ═══ */
+const SECTORS=[
+ {k:'nebuchad',i:'🏗️',n:'نبوخذ نصّر',d:'مواقع وبرمجة ونشر واختبار',c:0x4f9cff},
+ {k:'ishtar',i:'🎨',n:'عشتار',d:'صور وهوية بصرية وتصميم',c:0xff7ab8},
+ {k:'gilgamesh',i:'🎬',n:'جلجامش',d:'فيديو سينمائي ومونتاج',c:0xffb347},
+ {k:'ajibi',i:'💰',n:'أجيبي',d:'مال وتداول وبوتات',c:0x7ce3a5},
+ {k:'lamassu',i:'🕸️',n:'لاماسو',d:'بحث وتدقيق وعبور الويب',c:0x6fd3e7},
+ {k:'ninurta',i:'🛡️',n:'نينورتا',d:'أمن سيبراني هجوماً ودفاعاً',c:0xff6b6b},
+ {k:'nargal',i:'⚔️',n:'نركال',d:'معرفة عسكرية ومحاكاة أسلحة',c:0xc0c0c0},
+ {k:'nabu',i:'📣',n:'نابو',d:'سوشال ميديا ونشر وردود',c:0xff9de2},
+ {k:'adad',i:'⚡',n:'أدد',d:'صوتيات ومكالمات وبودكاست',c:0xffe066},
+ {k:'kudurru',i:'📜',n:'كودورو',d:'مستندات وعقود وأرشيف',c:0xd8b48f},
+ {k:'zaqiqu',i:'🥽',n:'زاقيقو',d:'واقع معزز AR',c:0xa08cff},
+ {k:'enki',i:'🌌',n:'إنكي',d:'واقع افتراضي ومختبرات',c:0x7a9bff},
+ {k:'gula',i:'🏥',n:'گولا',d:'طب وصحة وأدوية موثقة',c:0x7be8d8},
+ {k:'nisaba',i:'📐',n:'نيسابا',d:'هندسة بدقة صارمة',c:0xf0a35e},
+ {k:'lir',i:'🎵',n:'لير',d:'موسيقى وأغاني وبيانو',c:0xe88cff},
+ {k:'ur',i:'🕊️',n:'أور',d:'كتب سماوية وتفاسير موثقة',c:0xf5f0dc},
+ {k:'enkido',i:'💪',n:'أنكيدو',d:'رياضة ولياقة وتغذية',c:0x9dff70},
+ {k:'anu',i:'🚀',n:'آنو',d:'فضاء وفلك ومراصد',c:0x8cc8ff},
+];
+const GRID=document.getElementById('segGrid');
+GRID.innerHTML=SECTORS.map(s=>`<div class="seg"><div class="si">${s.i}</div><h4>⭐ ${s.n}</h4><p>${s.d}</p></div>`).join('');
 
-            // 2. إضافة رسالة انتظار البوت
-            const botMsgBubble = appendMessage("جاري التفكير...", 'bot');
+/* ═══ التبويبات ═══ */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');document.getElementById(b.dataset.t).classList.add('on');
+  if(b.dataset.t==='brainTab')resizeBrain();
+});
 
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ chatInput: messageText, message: messageText })
-                });
+/* ═══ 🧠 عقل جارفيس ثلاثي الأبعاد ═══ */
+let scene,camera,renderer,controls,brain,pulses,pulseData,sectorSprites=[],rings=[],coreGlow,clock;
+const BRAIN={state:'idle',t:0};
+function radialTex(color){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
+ const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,color);g.addColorStop(.4,color+'aa');g.addColorStop(1,'transparent');
+ x.fillStyle=g;x.fillRect(0,0,64,64);const t=new THREE.CanvasTexture(c);return t;}
+function initBrain(){
+ const el=document.getElementById('brainCanvas');
+ scene=new THREE.Scene();
+ camera=new THREE.PerspectiveCamera(55,el.clientWidth/el.clientHeight,.1,100);
+ camera.position.set(0,.6,5.2);
+ renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+ renderer.setSize(el.clientWidth,el.clientHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+ el.appendChild(renderer.domElement);
+ controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.autoRotate=false;controls.enablePan=false;
+ controls.minDistance=3;controls.maxDistance=8;
+ brain=new THREE.Group();scene.add(brain);
+ // الخلايا العصبية
+ const N=460,pos=new Float32Array(N*3),col=new Float32Array(N*3),nodes=[];
+ const c1=new THREE.Color(0x4f7fd8),c2=new THREE.Color(0xd4af37),tmp=new THREE.Color();
+ for(let i=0;i<N;i++){
+  const th=Math.acos(2*Math.random()-1),ph=Math.random()*Math.PI*2,r=1.35+Math.random()*.3;
+  const x=r*Math.sin(th)*Math.cos(ph),y=r*Math.cos(th)*.85,z=r*Math.sin(th)*Math.sin(ph);
+  nodes.push(new THREE.Vector3(x,y,z));pos.set([x,y,z],i*3);
+  tmp.copy(c1).lerp(c2,Math.random());col.set([tmp.r,tmp.g,tmp.b],i*3);
+ }
+ const g=new THREE.BufferGeometry();
+ g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+ g.setAttribute('color',new THREE.BufferAttribute(col,3));
+ brain.add(new THREE.Points(g,new THREE.PointsMaterial({size:.075,vertexColors:true,map:radialTex('#ffffff'),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
+ // الروابط
+ const segs=[];
+ for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+  const d=nodes[i].distanceTo(nodes[j]);
+  if(d>.38&&d<.62&&Math.random()<.35)segs.push([nodes[i],nodes[j]]);
+ }
+ const lp=new Float32Array(segs.length*6);
+ segs.forEach((s,i)=>{lp.set([s[0].x,s[0].y,s[0].z,s[1].x,s[1].y,s[1].z],i*6)});
+ const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.BufferAttribute(lp,3));
+ brain.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0xd4af37,transparent:true,opacity:.14,blending:THREE.AdditiveBlending})));
+ // النبضات المتنقلة ⚡
+ const PN=90;pp=new Float32Array(PN*3);pulseData=[];
+ for(let i=0;i<PN;i++){pulseData.push({s:segs[(Math.random()*segs.length)|0],t:Math.random(),v:.15+Math.random()*.4});}
+ pulses=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({size:.11,map:radialTex('#f0d98c'),color:0xf0d98c,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));
+ pulses.geometry.setAttribute('position',new THREE.BufferAttribute(pp,3));
+ brain.add(pulses);
+ // نواة التوهج
+ const sp=new THREE.SpriteMaterial({map:radialTex('#d4af37'),color:0xd4af37,transparent:true,opacity:.5,blending:THREE.AdditiveBlending});
+ coreGlow=new THREE.Sprite(sp);coreGlow.scale.set(2.6,2.6,1);brain.add(coreGlow);
+ // ⭕ العقال — حلقات ذهبية
+ [[2.05,.5,0,'#d4af37'],[2.25,-.5,.6,'#f0d98c'],[2.45,.15,-.5,'#d4af37']].forEach(([r,rx,rz,c])=>{
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.013,10,140),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.55,blending:THREE.AdditiveBlending}));
+  ring.rotation.set(rx,0,rz);scene.add(ring);rings.push(ring);
+ });
+ // القواطع الـ18 بمدار
+ const ptex=radialTex('#ffffff');
+ SECTORS.forEach((s,i)=>{
+  const sp2=new THREE.Sprite(new THREE.SpriteMaterial({map:ptex,color:s.c,transparent:true,opacity:.85,blending:THREE.AdditiveBlending}));
+  sp2.scale.set(.22,.22,1);scene.add(sp2);sectorSprites.push({sp:sp2,i,ang:i/SECTORS.length*Math.PI*2,act:0});
+ });
+ clock=new THREE.Clock();animate();
+}
+let pp;
+function setState(st,label){
+ BRAIN.state=st;BRAIN.t=0;
+ document.getElementById('brainState').textContent=label;
+}
+window.BrainAPI={
+ think(){setState('think','🤔 يفكر — النبضات تتسارع ⚡')},
+ idle(){setState('idle','😴 خامل — يتنفس')},
+ speak(){setState('speak','🗣️ أبو علي يحچي — العقل يشع ✨')},
+ sector(k){const f=sectorSprites.find(s=>SECTORS[s.i].k===k);if(f)f.act=1;}
+};
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.05);BRAIN.t+=dt;
+ const S=BRAIN.state,spd=S==='think'?4:S==='speak'?1.6:1;
+ brain.rotation.y+=dt*.12*(S==='think'?2.2:1);
+ // نبضات
+ const pos=pulses.geometry.attributes.position.array;
+ pulseData.forEach((p,i)=>{
+  p.t+=dt*p.v*spd; if(p.t>1){p.t=0;p.s=pulseData[(Math.random()*pulseData.length)|0].s;}
+  const a=p.s[0],b=p.s[1],t=p.t;
+  pos[i*3]=a.x+(b.x-a.x)*t;pos[i*3+1]=a.y+(b.y-a.y)*t;pos[i*3+2]=a.z+(b.z-a.z)*t;
+ });
+ pulses.geometry.attributes.position.needsUpdate=true;
+ // تنفس/وميض
+ let sc=1+Math.sin(BRAIN.t*1.4)*.02,op=.45+Math.sin(BRAIN.t*1.4)*.08;
+ if(S==='speak'){sc=1+Math.abs(Math.sin(BRAIN.t*9))*.13;op=.55+Math.abs(Math.sin(BRAIN.t*9))*.4;}
+ if(S==='think'){op=.5+Math.abs(Math.sin(BRAIN.t*5))*.25;}
+ coreGlow.scale.set(2.6*sc,2.6*sc,1);coreGlow.material.opacity=op;
+ // العقال
+ rings.forEach((r,i)=>{r.rotation.z+=dt*(.15+i*.07)*(i%2?-1:1)});
+ // القواطع بمدار
+ sectorSprites.forEach(o=>{
+  o.ang+=dt*.25;
+  const r=2.9,y=Math.sin(o.ang*2)*.45;
+  o.sp.position.set(Math.cos(o.ang)*r,y,Math.sin(o.ang)*r);
+  if(o.act>0){o.act=Math.max(0,o.act-dt*.5);}
+  const s=.22+o.act*.3;o.sp.scale.set(s,s,1);
+ });
+ controls.update();renderer.render(scene,camera);
+}
+function resizeBrain(){
+ const el=document.getElementById('brainCanvas');
+ if(!renderer||!el.clientWidth)return;
+ camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();
+ renderer.setSize(el.clientWidth,el.clientHeight);
+}
+addEventListener('resize',resizeBrain);
+initBrain();
 
-                const rawText = await response.text();
-                let rawHtmlContent = "";
-                let cleanReply = "";
+/* ═══ 🔊 صوت أبو علي ═══ */
+let voiceOn=false;
+const pickVoice=()=>speechSynthesis.getVoices().find(v=>v.lang.startsWith('ar'));
+function speak(txt){
+ if(!voiceOn)return;
+ speechSynthesis.cancel();
+ const clean=txt.replace(/[🎖️🫡✅🟡🔴🏛️⭐🦅🎨💻🗄️🧪🚀📐✂️🖌️🌟🎬✍️🗣️🎞️💰🔍📊🛡️]/g,'');
+ const u=new SpeechSynthesisUtterance(clean);
+ u.lang='ar-IQ';u.rate=1;const v=pickVoice();if(v)u.voice=v;
+ u.onstart=()=>BrainAPI.speak();u.onend=()=>BrainAPI.idle();
+ speechSynthesis.speak(u);
+}
+document.getElementById('ttsBtn').onclick=e=>{voiceOn=!voiceOn;e.target.classList.toggle('on',voiceOn);
+ if(!voiceOn){speechSynthesis.cancel();BrainAPI.idle();}};
+document.getElementById('demoSpeak').onclick=()=>{
+ voiceOn=true;document.getElementById('ttsBtn').classList.add('on');
+ speak('سيّدي، أنا أبو علي، جنرال جيشك الرقمي. ثمانية عشر قاطعاً بانتظار أوامرك. أمُر، وأنفّذ بإذن الله.');
+};
+document.getElementById('demoThink').onclick=()=>{BrainAPI.think();setTimeout(()=>BrainAPI.idle(),3000);};
 
-                try {
-                    const parsedJson = JSON.parse(rawText);
-                    rawHtmlContent = parsedJson.html || "";
-                    cleanReply = parsedJson.html || parsedJson.output || parsedJson.text || parsedJson.message || parsedJson.response || rawText;
-                } catch (err) {
-                    cleanReply = rawText;
-                }
+/* ═══ 🎙️ الأمر الصوتي ═══ */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const micBtn=document.getElementById('micBtn');
+if(SR){const rec=new SR();rec.lang='ar-IQ';rec.onresult=e=>{
+  document.getElementById('inp').value=e.results[0][0].transcript;sendNow();};
+ micBtn.onclick=()=>{micBtn.textContent='🔴';rec.start();};
+ rec.onend=()=>micBtn.textContent='🎙️';
+}else micBtn.style.display='none';
 
-                // تنظيف كود الـ HTML واستخراج النص المباشر
-                let isHtmlDetected = false;
-                if (typeof cleanReply === 'string' && (cleanReply.includes('<') || cleanReply.includes('>'))) {
-                    isHtmlDetected = true;
-                    if (!rawHtmlContent) rawHtmlContent = cleanReply;
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(cleanReply, 'text/html');
-                    cleanReply = doc.body.textContent.replace(/\s+/g, ' ').trim() || "تم استلام الرد بنجاح.";
-                }
-
-                // مسح نص الانتظار وتفريغ الفقرة لتعبئتها بالشكل الفخم
-                botMsgBubble.innerHTML = "";
-
-                // نص الرد الصافي
-                const textNode = document.createElement("div");
-                textNode.innerText = cleanReply;
-                botMsgBubble.appendChild(textNode);
-
-                // أزرار التحكم بالرسالة (نسخ + مشاركة + نسخ HTML)
-                addActionBar(botMsgBubble, cleanReply, rawHtmlContent, isHtmlDetected);
-
-            } catch (error) {
-                console.error("Error:", error);
-                botMsgBubble.innerText = "عذراً، حدث خطأ في الاتصال بالورُك فلو.";
-            } finally {
-                inputField.disabled = false;
-                sendBtn.disabled = false;
-                inputField.focus();
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-        }
-
-        function appendMessage(text, sender) {
-            const chatContainer = document.getElementById("chat-container");
-            const wrapper = document.createElement("div");
-            wrapper.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
-
-            const msgBubble = document.createElement("div");
-            if (sender === 'user') {
-                msgBubble.className = "bg-blue-600 text-white p-3 rounded-2xl rounded-tl-none max-w-xs md:max-w-md shadow-sm space-y-2";
-                msgBubble.innerText = text;
-                addActionBar(msgBubble, text, "", false);
-            } else {
-                msgBubble.className = "bg-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none max-w-xs md:max-w-md shadow-sm border border-gray-700 space-y-2 whitespace-pre-wrap";
-                msgBubble.innerText = text;
-            }
-
-            wrapper.appendChild(msgBubble);
-            chatContainer.appendChild(wrapper);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            return msgBubble;
-        }
-
-        function addActionBar(bubbleElement, textToCopy, htmlContent, showHtmlBtn) {
-            const btnBar = document.createElement("div");
-            btnBar.className = "flex flex-wrap gap-2 pt-2 mt-2 border-t border-gray-700/50 text-xs text-gray-300";
-
-            // زر نسخ النص
-            const copyBtn = document.createElement("button");
-            copyBtn.type = "button";
-            copyBtn.className = "hover:text-blue-400 bg-gray-900/50 px-2 py-1 rounded border border-gray-600 flex items-center gap-1 transition-all";
-            copyBtn.innerHTML = "📋 نسخ النص";
-            copyBtn.onclick = () => copyToClipboard(textToCopy, copyBtn);
-            btnBar.appendChild(copyBtn);
-
-            // زر المشاركة
-            if (navigator.share) {
-                const shareBtn = document.createElement("button");
-                shareBtn.type = "button";
-                shareBtn.className = "hover:text-green-400 bg-gray-900/50 px-2 py-1 rounded border border-gray-600 flex items-center gap-1 transition-all";
-                shareBtn.innerHTML = "🔗 مشاركة";
-                shareBtn.onclick = () => {
-                    navigator.share({ title: 'Abu Ali Agent Response', text: textToCopy }).catch(() => {});
-                };
-                btnBar.appendChild(shareBtn);
-            }
-
-            // زر نسخ كود HTML (إذا كان هناك كود HTML)
-            if (showHtmlBtn && htmlContent) {
-                const copyHtmlBtn = document.createElement("button");
-                copyHtmlBtn.type = "button";
-                copyHtmlBtn.className = "hover:text-yellow-400 bg-gray-900/50 px-2 py-1 rounded border border-gray-600 flex items-center gap-1 transition-all";
-                copyHtmlBtn.innerHTML = "📄 نسخ كود HTML";
-                copyHtmlBtn.onclick = () => copyToClipboard(htmlContent, copyHtmlBtn);
-                btnBar.appendChild(copyHtmlBtn);
-            }
-
-            bubbleElement.appendChild(btnBar);
-        }
-
-        function copyToClipboard(content, btnElement) {
-            navigator.clipboard.writeText(content).then(() => {
-                const originalText = btnElement.innerHTML;
-                btnElement.innerHTML = "✅ تم النسخ!";
-                setTimeout(() => { btnElement.innerHTML = originalText; }, 2000);
-            });
-        }
-    </script>
-</body>
-    </html>
-    
+/* ═══ 💬 الدردشة ═══ */
+const msgs
